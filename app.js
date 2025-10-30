@@ -1,15 +1,25 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const Blog = require('./models/blog')
 const User = require('./models/user')
 
+const usersRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
+
+const { tokenExtractor } = require('./utils/middleware')
+
 const app = express()
 app.use(express.json())
+app.use(tokenExtractor)
+
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 
 app.get('/api/blogs', async (request, response) => {
-  const blogs = await Blog.find({})
+  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
   response.json(blogs)
 })
 
@@ -17,18 +27,55 @@ app.post('/api/blogs', async (request, response, next) => {
   try {
     const body = request.body
 
-    const blog = new Blog(body)
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
+
+    const user = await User.findById(decodedToken.id)
+    if (!user) {
+      return response.status(404).json({ error: 'user not found' })
+    }
+
+    const blog = new Blog({
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes || 0,
+      user: user._id
+    })
+
     const savedBlog = await blog.save()
+
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+
     response.status(201).json(savedBlog)
   } catch (error) {
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
     next(error)
   }
 })
 
 app.delete('/api/blogs/:id', async (request, response, next) => {
   try {
-    const { id } = request.params
-    await Blog.findByIdAndDelete(id)
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
+    const user = await User.findById(decodedToken.id)
+    const blog = await Blog.findById(request.params.id)
+    if (!blog) {
+      return response.status(404).json({ error: 'blog not found' })
+    }
+
+    if (blog.user.toString() !== decodedToken.id.toString()) {
+      return response.status(403).json({ error: 'unauthorized: cannot delete others blogs' })
+    }
+
+    await Blog.findByIdAndDelete(request.params.id)
     response.status(204).end()
   } catch (error) {
     next(error)
@@ -71,6 +118,13 @@ app.post('/api/users', async (request, response, next) => {
       })
     }
 
+    const existingUser = await User.findOne({ username })
+    if (existingUser) {
+      return response.status(400).json({
+        error: 'expected `username` to be unique',
+      })
+    }
+
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -103,3 +157,6 @@ app.use((error, request, response, next) => {
 })
 
 module.exports = app
+
+const blogsRouter = require('./controllers/blogs')
+app.use('/api/blogs', blogsRouter)
