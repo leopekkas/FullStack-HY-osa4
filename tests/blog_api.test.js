@@ -6,9 +6,6 @@ const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
 
-console.log('TEST ENVIRONMENT:', process.env.NODE_ENV)
-console.log('USING DB:', process.env.TEST_MONGODB_URI)
-
 const api = supertest(app)
 
 const initialBlogs = [
