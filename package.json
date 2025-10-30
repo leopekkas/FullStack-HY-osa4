@@ -4,7 +4,7 @@
   "description": "Osa 4",
   "main": "index.js",
   "scripts": {
-    "test": "node --test",
+    "test": "cross-env NODE_ENV=test node --test",
     "dev": "node --watch index.js",
     "start": "node index.js"
   },
@@ -24,5 +24,9 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "mongoose": "^8.19.2"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "supertest": "^7.1.4"
   }
 }
