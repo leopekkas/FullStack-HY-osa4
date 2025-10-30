@@ -1,0 +1,28 @@
+{
+  "name": "fullstack-hy-osa4",
+  "version": "1.0.0",
+  "description": "Osa 4",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leopekkas/FullStack-HY-osa4.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/leopekkas/FullStack-HY-osa4/issues"
+  },
+  "homepage": "https://github.com/leopekkas/FullStack-HY-osa4#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mongoose": "^8.19.2"
+  }
+}
