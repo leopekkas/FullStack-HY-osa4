@@ -40,3 +40,70 @@ describe('total likes', () => {
     assert.strictEqual(result, 9)
   })
 })
+
+describe('favorite blog', () => {
+  const blogs = [
+    {
+      title: 'React patterns',
+      author: 'Michael Chan',
+      url: 'https://reactpatterns.com/',
+      likes: 7,
+    },
+    {
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: 5,
+    },
+    {
+      title: 'Canonical string reduction',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
+      likes: 12,
+    },
+  ]
+
+  test('of empty list is null', () => {
+    const result = listHelper.favoriteBlog([])
+    assert.strictEqual(result, null)
+  })
+
+  test('returns the blog with most likes', () => {
+    const result = listHelper.favoriteBlog(blogs)
+    const expected = {
+      title: 'Canonical string reduction',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
+      likes: 12,
+    }
+    assert.deepStrictEqual(result, expected)
+  })
+})
+
+describe('most blogs', () => {
+  const blogs = [
+    { author: 'Robert C. Martin', likes: 5 },
+    { author: 'Edsger W. Dijkstra', likes: 7 },
+    { author: 'Robert C. Martin', likes: 10 },
+    { author: 'Robert C. Martin', likes: 0 },
+    { author: 'Edsger W. Dijkstra', likes: 1 },
+  ]
+
+  test('returns the author with most blogs', () => {
+    const result = listHelper.mostBlogs(blogs)
+    assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 })
+  })
+})
+
+describe('most likes', () => {
+  const blogs = [
+    { author: 'Edsger W. Dijkstra', likes: 5 },
+    { author: 'Robert C. Martin', likes: 7 },
+    { author: 'Edsger W. Dijkstra', likes: 12 },
+  ]
+
+  test('returns the author whose blogs have most total likes', () => {
+    const result = listHelper.mostLikes(blogs)
+    assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', likes: 17 })
+  })
+})
