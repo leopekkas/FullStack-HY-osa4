@@ -48,6 +48,29 @@ test('blogs are returned as json and correct amount', async () => {
   assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
+test('a valid blog can be added', async () => {
+  const newBlog = {
+    title: 'New Blog from Test',
+    author: 'Leo',
+    url: 'http://testblog.com',
+    likes: 7,
+  }
+
+  const blogsAtStart = await Blog.find({})
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await Blog.find({})
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length + 1)
+
+  const titles = blogsAtEnd.map((b) => b.title)
+  assert.ok(titles.includes('New Blog from Test'))
+})
+
 test('unique identifier property of blogs is named id', async () => {
   const response = await api.get('/api/blogs')
   const blogs = response.body
@@ -56,4 +79,59 @@ test('unique identifier property of blogs is named id', async () => {
     assert.ok(blog.id)
     assert.strictEqual(blog._id, undefined)
   }
+})
+
+test('if likes property is missing from request, it will default to 0', async () => {
+  const newBlog = {
+    title: 'Blog without likes',
+    author: 'Leo',
+    url: 'http://nolikes.com',
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await Blog.find({})
+  const addedBlog = blogsAtEnd.find((b) => b.title === 'Blog without likes')
+
+  assert.strictEqual(addedBlog.likes, 0)
+})
+
+test('blog without title is not added', async () => {
+  const newBlog = {
+    author: 'Author without title',
+    url: 'http://notitle.com',
+    likes: 2,
+  }
+
+  const blogsAtStart = await Blog.find({})
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await Blog.find({})
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+})
+
+test('blog without url is not added', async () => {
+  const newBlog = {
+    title: 'No URL Blog',
+    author: 'Author without url',
+    likes: 3,
+  }
+
+  const blogsAtStart = await Blog.find({})
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await Blog.find({})
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
 })
